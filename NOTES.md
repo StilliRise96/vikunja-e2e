@@ -21,9 +21,11 @@ State persists locally, so I don't lose my account between restarts while develo
   wrong password → 403, server-side, ~130ms
   unknown → whether the server itself rejects empty credentials (untestable via UI)
 
+- File upload works. Files are stored in data/files named by attachment ID, not original filename — the real name lives in the database.
+
 ## 6. Open questions
 
-Does file upload work? Mounted data/files but never tested it.
+Does file upload work? yes
 Does the server reject an empty login, or only the browser?
 BDD/Gherkin — now, or as a later extension?
 
