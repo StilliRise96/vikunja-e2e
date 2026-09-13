@@ -33,3 +33,6 @@ BDD/Gherkin — now, or as a later extension?
 Set up the Environment 
 reading the logs
 explain the error codes
+
+## 8. Observations with Playwright
+Failing test still creates data — everything before the failing assertion executes. Cleanup must happen regardless of pass/fail, which is what fixture teardown is for. 
