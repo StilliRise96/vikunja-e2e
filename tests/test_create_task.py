@@ -1,7 +1,7 @@
 from playwright.sync_api import expect
 
 
-def test_login_and_create_task(page):
+def test_create_task(page):
     page.goto("http://localhost:3456/login")
     page.fill("#username", "testuser")
     page.fill("#password", "testuser@1234")  # has to be fixed in Phase 4
