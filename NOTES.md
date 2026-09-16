@@ -22,6 +22,7 @@ State persists locally, so I don't lose my account between restarts while develo
   unknown → whether the server itself rejects empty credentials (untestable via UI)
 
 - File upload works. Files are stored in data/files named by attachment ID, not original filename — the real name lives in the database.
+- Vankuja allows to add duplicate tasks titles
 
 ## 6. Open questions
 
@@ -36,3 +37,4 @@ explain the error codes
 
 ## 8. Observations with Playwright
 Failing test still creates data — everything before the failing assertion executes. Cleanup must happen regardless of pass/fail, which is what fixture teardown is for. 
+
