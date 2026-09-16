@@ -1,13 +1,14 @@
 from playwright.sync_api import expect
-
+from pages.login_page import LoginPage
+from pages.home_page import HomePage
+import uuid
 
 def test_create_task(page):
-    page.goto("http://localhost:3456/login")
-    page.fill("#username", "testuser")
-    page.fill("#password", "testuser@1234")  # has to be fixed in Phase 4
-    page.get_by_role("button", name="Login").click()
+    login_page = LoginPage(page)
+    login_page.goto()
+    title = f"Buy Bike {uuid.uuid4().hex[:8]}"
+    login_page.login("testuser", "testuser@1234")  # hardcoded password: fix in Phase 4
+    home_page = HomePage(page)
+    home_page.add_task(title)
 
-    page.get_by_placeholder("Add a task…").fill("Buy Carrots")
-    page.get_by_role("button", name="Add").click()
-
-    expect(page.get_by_role("link", name="Buy Carrots")).to_be_visible()
+    expect(page.get_by_role("link", name=title)).to_be_visible()
