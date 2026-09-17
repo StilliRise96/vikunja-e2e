@@ -38,3 +38,13 @@ explain the error codes
 ## 8. Observations with Playwright
 Failing test still creates data — everything before the failing assertion executes. Cleanup must happen regardless of pass/fail, which is what fixture teardown is for. 
 
+- Login rate limit (Vikunja 2.5.0): logins were rejected with
+  "Too Many Requests" after repeated test runs.
+- Measured: 12 wrong-password POSTs to /api/v1/login within a minute
+    -> requests 1-10 returned 403, requests 11-12 returned 429.
+- Source (v2.5.0, pkg/routes/rate_limit.go and routes.go): 10 requests
+    per 60 s per IP (`ratelimit.noauthlimit`), cannot be disabled.
+    Login, register, password reset and token refresh share this budget.
+- Not yet measured: whether the web login also triggers a token
+    refresh, which would explain hitting the limit after 6 logins.
+- Impact on tests: every UI login and registration uses this budget.
