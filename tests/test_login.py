@@ -10,3 +10,4 @@ def test_login(page):
 
     home_page = HomePage(page)
     expect(home_page.task_input).to_be_visible()
+
