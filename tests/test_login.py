@@ -1,13 +1,16 @@
 from playwright.sync_api import expect
-from pages.login_page import LoginPage
+
 from pages.home_page import HomePage
+from pages.login_page import LoginPage
 
 
-def test_login(page):
+def test_login(browser, test_user):
+    context = browser.new_context()  # no saved session: log in for real
+    page = context.new_page()
+
     login_page = LoginPage(page)
     login_page.goto()
-    login_page.login("testuser", "testuser@1234")  # hardcoded password: fix in Phase 4
+    login_page.login(test_user["username"], test_user["password"])
 
-    home_page = HomePage(page)
-    expect(home_page.task_input).to_be_visible()
-
+    expect(HomePage(page).task_input).to_be_visible()
+    context.close()
