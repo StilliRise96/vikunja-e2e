@@ -10,3 +10,9 @@ class HomePage:
 
     def task_link(self, title):
         return self.page.get_by_role("link", name=title, exact=True)
+    
+    def task_checkbox(self, title):
+        return self.page.get_by_role("checkbox", name=f"Mark '{title}' as done")
+    
+    def mark_done(self, title):
+        self.page.locator("label", has=self.task_checkbox(title)).click()

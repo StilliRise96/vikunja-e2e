@@ -51,3 +51,43 @@ def logged_in_state(browser, test_user, tmp_path_factory):
 def browser_context_args(browser_context_args, logged_in_state):
     """Every test's browser starts from the saved logged-in session."""
     return {**browser_context_args, "storage_state": logged_in_state}
+
+@pytest.fixture(scope="session")
+def api_token(api_base_url, test_user):
+    """One API login per run, used for setting up test data."""
+    response = requests.post(
+        f"{api_base_url}/api/v1/login",
+        json={"username": test_user["username"], "password": test_user["password"]},
+        timeout=10,
+    )
+    assert response.ok, f"API login failed: {response.status_code} {response.text}"
+    return response.json()["token"]
+
+
+@pytest.fixture(scope="session")
+def api_headers(api_token):
+    return {"Authorization": f"Bearer {api_token}"}
+
+
+@pytest.fixture(scope="session")
+def project_id(api_base_url, api_headers):
+    """The user's own Inbox project. Looked up, never hardcoded:
+    each user gets a different id, and negative ids are virtual filters."""
+    projects = requests.get(f"{api_base_url}/api/v1/projects", headers=api_headers, timeout=10).json()
+    real = [p for p in projects if p["id"] > 0]
+    assert real, f"No real project found: {projects}"
+    return real[0]["id"]
+
+
+@pytest.fixture
+def api_task(api_base_url, api_headers, project_id):
+    """Create a task through the API so UI tests start from a known state."""
+    title = f"Task {uuid.uuid4().hex[:8]}"
+    response = requests.put(
+        f"{api_base_url}/api/v1/projects/{project_id}/tasks",
+        json={"title": title},
+        headers=api_headers,
+        timeout=10,
+    )
+    assert response.status_code == 201, f"Task setup failed: {response.status_code} {response.text}"
+    return response.json()
