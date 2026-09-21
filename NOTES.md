@@ -48,3 +48,4 @@ Failing test still creates data — everything before the failing assertion exec
 - Not yet measured: whether the web login also triggers a token
     refresh, which would explain hitting the limit after 6 logins.
 - Impact on tests: every UI login and registration uses this budget.
+- JWT appears to live ~10 minutes (measured from exp).

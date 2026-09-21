@@ -5,6 +5,7 @@ services:
       - "3456:3456"
     environment:
       VIKUNJA_SERVICE_PUBLICURL: "http://localhost:3456"
+      VIKUNJA_RATELIMIT_NOAUTHLIMIT: "200"
     volumes:
       - ./data/files:/app/vikunja/files
       - ./data/db:/db
