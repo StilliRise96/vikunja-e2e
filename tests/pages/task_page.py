@@ -9,7 +9,7 @@ class TaskPage:
 
     def goto(self, task_id):
         self.task_id = task_id
-        self.page.goto(f"http://localhost:3456/tasks/{task_id}")
+        self.page.goto(f"/tasks/{task_id}")
 
     def rename(self, new_title):
         self.title.click()

@@ -5,7 +5,7 @@ from pages.home_page import HomePage
 
 def test_mark_task_as_done(page, api_task):
     home_page = HomePage(page)
-    page.goto("http://localhost:3456/")
+    page.goto("/")
 
     checkbox = home_page.task_checkbox(api_task["title"])
     expect(checkbox).not_to_be_checked()

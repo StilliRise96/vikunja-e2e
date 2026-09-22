@@ -12,11 +12,11 @@ from pages.login_page import LoginPage
         pytest.param("no_such_user_38f1c2", "AnyPassword1!", id="unknown username"),
     ],
 )
-def test_login_fails_with_invalid_credentials(browser, test_user, username, password):
+def test_login_fails_with_invalid_credentials(browser, base_url, test_user, username, password):
     if username == "valid_user":
         username = test_user["username"]
 
-    context = browser.new_context()
+    context = browser.new_context(base_url=base_url)
     page = context.new_page()
 
     login_page = LoginPage(page)

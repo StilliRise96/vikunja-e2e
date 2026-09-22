@@ -1,4 +1,3 @@
-import os
 import uuid
 
 import pytest
@@ -8,12 +7,10 @@ from playwright.sync_api import expect
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
 
-BASE_URL = os.getenv("VIKUNJA_BASE_URL", "http://localhost:3456")
-
 
 @pytest.fixture(scope="session")
-def api_base_url():
-    return BASE_URL
+def api_base_url(base_url):
+    return base_url
 
 
 @pytest.fixture(scope="session")
@@ -31,9 +28,9 @@ def test_user(api_base_url):
 
 
 @pytest.fixture(scope="session")
-def logged_in_state(browser, test_user, tmp_path_factory):
+def logged_in_state(browser, base_url, test_user, tmp_path_factory):
     """Log in once through the UI and save the browser session to a file."""
-    context = browser.new_context()
+    context = browser.new_context(base_url=base_url)
     page = context.new_page()
 
     login_page = LoginPage(page)
@@ -51,6 +48,7 @@ def logged_in_state(browser, test_user, tmp_path_factory):
 def browser_context_args(browser_context_args, logged_in_state):
     """Every test's browser starts from the saved logged-in session."""
     return {**browser_context_args, "storage_state": logged_in_state}
+
 
 @pytest.fixture(scope="session")
 def api_token(api_base_url, test_user):
