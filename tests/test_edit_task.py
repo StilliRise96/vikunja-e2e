@@ -11,7 +11,6 @@ def test_rename_task(page, api_task):
 
     new_title = f"Renamed {uuid.uuid4().hex[:8]}"
     task_page.rename(new_title)
-    page.wait_for_timeout(500)  # temporary
 
     page.reload()
 
