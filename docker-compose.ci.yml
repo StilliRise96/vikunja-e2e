@@ -1,7 +1,14 @@
-# CI override: no bind mounts.
-# Each CI run starts on a fresh machine, and the tests create their own data,
-# so the database can live inside the container and be thrown away afterwards.
-# This also avoids host folder permissions, which differ between macOS and Linux.
+# CI override: container-internal volumes instead of host bind mounts.
+# Each CI run starts on a fresh machine and the tests create their own data,
+# so nothing needs to survive the run. Named volumes avoid host folder
+# permissions, which differ between macOS and Linux — but Vikunja still needs
+# writable paths for /app/vikunja/files and /db, so we give it those.
 services:
   vikunja:
-    volumes: !reset []
+    volumes:
+      - ci-files:/app/vikunja/files
+      - ci-db:/db
+
+volumes:
+  ci-files:
+  ci-db:
