@@ -1,10 +1,12 @@
 # CI override: container-internal volumes instead of host bind mounts.
 # Each CI run starts on a fresh machine and the tests create their own data,
-# so nothing needs to survive the run. Named volumes avoid host folder
-# permissions, which differ between macOS and Linux — but Vikunja still needs
-# writable paths for /app/vikunja/files and /db, so we give it those.
+# so nothing needs to survive the run.
+# Docker creates named volumes owned by root, but Vikunja's process runs as
+# uid 1000, so it cannot write to them. Running the container as root for CI
+# avoids the mismatch; this is a throwaway environment, not a deployment.
 services:
   vikunja:
+    user: "0:0"
     volumes:
       - ci-files:/app/vikunja/files
       - ci-db:/db
