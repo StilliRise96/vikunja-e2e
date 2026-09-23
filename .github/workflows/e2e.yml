@@ -1,0 +1,64 @@
+name: E2E tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Start Vikunja 2.5.0
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d
+
+      - name: Wait until Vikunja responds
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3456/api/v1/info > /dev/null; then
+              echo "Vikunja ready after attempt $i"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Vikunja did not become ready in 60 seconds"
+          docker compose logs
+          exit 1
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Chromium for Playwright
+        run: python -m playwright install --with-deps chromium
+
+      - name: Run tests
+        run: >
+          python -m pytest -v
+          --html=report.html --self-contained-html
+          --tracing=retain-on-failure
+          --screenshot=only-on-failure
+
+      - name: Upload test report and failure traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: |
+            report.html
+            test-results/
+          if-no-files-found: ignore
+
+      - name: Show Vikunja logs on failure
+        if: failure()
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml logs

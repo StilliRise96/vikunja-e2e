@@ -1,0 +1,7 @@
+# CI override: no bind mounts.
+# Each CI run starts on a fresh machine, and the tests create their own data,
+# so the database can live inside the container and be thrown away afterwards.
+# This also avoids host folder permissions, which differ between macOS and Linux.
+services:
+  vikunja:
+    volumes: !reset []
