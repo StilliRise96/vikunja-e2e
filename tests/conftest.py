@@ -1,9 +1,9 @@
 import uuid
 
 import pytest
-import requests
 from playwright.sync_api import expect
 
+from api.vikunja_api import VikunjaApi
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
 
@@ -14,7 +14,12 @@ def api_base_url(base_url):
 
 
 @pytest.fixture(scope="session")
-def test_user(api_base_url):
+def api(api_base_url):
+    return VikunjaApi(api_base_url)
+
+
+@pytest.fixture(scope="session")
+def test_user(api):
     """Create a fresh user through the API, once per test run."""
     suffix = uuid.uuid4().hex[:8]
     user = {
@@ -22,8 +27,8 @@ def test_user(api_base_url):
         "email": f"qa_{suffix}@example.com",
         "password": f"Qa@{suffix}1234",
     }
-    response = requests.post(f"{api_base_url}/api/v1/register", json=user, timeout=10)
-    assert response.ok, f"Register failed: {response.status_code} {response.text}"
+    api.register(**user)
+    api.login(user["username"], user["password"])
     return user
 
 
@@ -51,41 +56,11 @@ def browser_context_args(browser_context_args, logged_in_state):
 
 
 @pytest.fixture(scope="session")
-def api_token(api_base_url, test_user):
-    """One API login per run, used for setting up test data."""
-    response = requests.post(
-        f"{api_base_url}/api/v1/login",
-        json={"username": test_user["username"], "password": test_user["password"]},
-        timeout=10,
-    )
-    assert response.ok, f"API login failed: {response.status_code} {response.text}"
-    return response.json()["token"]
-
-
-@pytest.fixture(scope="session")
-def api_headers(api_token):
-    return {"Authorization": f"Bearer {api_token}"}
-
-
-@pytest.fixture(scope="session")
-def project_id(api_base_url, api_headers):
-    """The user's own Inbox project. Looked up, never hardcoded:
-    each user gets a different id, and negative ids are virtual filters."""
-    projects = requests.get(f"{api_base_url}/api/v1/projects", headers=api_headers, timeout=10).json()
-    real = [p for p in projects if p["id"] > 0]
-    assert real, f"No real project found: {projects}"
-    return real[0]["id"]
+def project_id(api, test_user):
+    return api.first_project_id()
 
 
 @pytest.fixture
-def api_task(api_base_url, api_headers, project_id):
+def api_task(api, project_id):
     """Create a task through the API so UI tests start from a known state."""
-    title = f"Task {uuid.uuid4().hex[:8]}"
-    response = requests.put(
-        f"{api_base_url}/api/v1/projects/{project_id}/tasks",
-        json={"title": title},
-        headers=api_headers,
-        timeout=10,
-    )
-    assert response.status_code == 201, f"Task setup failed: {response.status_code} {response.text}"
-    return response.json()
+    return api.create_task(project_id, f"Task {uuid.uuid4().hex[:8]}")

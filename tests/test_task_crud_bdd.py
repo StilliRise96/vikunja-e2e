@@ -1,6 +1,5 @@
 import uuid
 
-import requests
 from playwright.sync_api import expect
 from pytest_bdd import given, scenarios, then, when
 
@@ -76,6 +75,5 @@ def task_is_done(page, task):
 
 
 @then("the task no longer exists")
-def task_is_gone(task, api_base_url, api_headers):
-    response = requests.get(f"{api_base_url}/api/v1/tasks/{task['id']}", headers=api_headers, timeout=10)
-    assert response.status_code == 404, f"Task still exists: {response.status_code} {response.text}"
+def task_is_gone(task, api):
+    assert api.task_status_code(task["id"]) == 404, "Task still exists after delete"
