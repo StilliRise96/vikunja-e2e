@@ -49,3 +49,13 @@ Failing test still creates data — everything before the failing assertion exec
     refresh, which would explain hitting the limit after 6 logins.
 - Impact on tests: every UI login and registration uses this budget.
 - JWT appears to live ~10 minutes (measured from exp).
+- SQLite write lock: PUT /api/v1/projects/{id}/tasks returned 500 twice
+    during full-suite runs (24 Sep).
+- Vikunja log: level=ERROR ... status=500 err="database is locked",
+    timestamps 10.091 (API setup) and 10.092 (browser write).
+- Cause: setup goes through the API while the browser is still writing
+    from the previous test. SQLite allows one writer at a time.
+- Environmental, not an application defect. Proper fix would be
+    PostgreSQL in the test environment instead of the default SQLite.
+- Not observed when running a single test file, only full runs.
+- Deliberately not retried in code: a retry would hide the constraint.
